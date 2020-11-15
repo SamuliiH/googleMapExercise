@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Google Map Exercise</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="/kentat.css">
+  </head>
+  <body>
+    <h2>Golfin kulta- ja etukentät</h2>
+    <div id="map"></div>
+    <script>
+      var map;
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 63.163472, lng: 26.449075},
+          zoom: 6
+        });
+
+        fetch('./kentat.json')
+        .then(response => {
+          return response.json()
+        }).then(myJson => {
+          createMap(myJson);
+        }).catch((error) => console.error('Error:', error))
+
+        function createMap(json) {
+          let golfKentat = json.kentat;
+
+          golfKentat.forEach((kentta)=>{
+
+            let icon = getIcon(kentta);
+
+            let golfKeskus = new google.maps.Marker({
+              position: {lat: kentta.lat, lng: kentta.lng},
+              map: map,
+              icon: {
+                url: icon
+              }
+            });
+
+            var infowindow = new google.maps.InfoWindow({
+              maxWidth: 400,
+              content: `
+                      <div style="background-color: rgba(227, 199, 240, 0.36);">
+                        <h1>${kentta.Kentta}</h1>
+                        <p style="margin: 1px;">${kentta.Kuvaus}</p>
+                        <p>Tyyppi ${kentta.Tyyppi}</p>
+                        <p>Osoite ${kentta.Osoite}</p>
+                        <p>Puhelin ${kentta.Puhelin}</p>
+                        <p>Email ${kentta.Sahkoposti}</p>
+                        <p>Web <a href=${kentta.Webbi} target="_blank">${kentta.Webbi}</a></p>
+                      </div>
+                        `
+            });
+
+            golfKeskus.addListener('click', function() {
+              infowindow.open(map, golfKeskus);
+            });
+
+          });
+
+        }
+
+      }
+
+
+      function getIcon(kentta) {
+
+        let blueIcon = "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
+        let greenIcon = "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
+        let redIcon = "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
+        let yellowIcon = "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
+
+        if(kentta.Tyyppi === "Kulta"){
+          return yellowIcon;
+        }else if(kentta.Tyyppi === "Etu"){
+          return greenIcon;
+        }else if(kentta.Tyyppi === "Kulta/Etu"){
+          return blueIcon;
+        }else{
+          return redIcon;
+        }
+      }
+
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCHQyTCxo_G7BxZRaQHT__bDFvSmtx9lYM&callback=initMap"
+    async defer></script>
+  </body>
+</html>
